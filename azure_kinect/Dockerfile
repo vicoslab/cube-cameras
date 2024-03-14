@@ -1,6 +1,6 @@
 ARG UBUNTU_VERSION=18.04
 
-FROM echolib:${UBUNTU_VERSION}
+FROM vicoslab/echolib:${UBUNTU_VERSION} AS echolib
 
 LABEL maintainer "domen.tabernik@fri.uni-lj.si"
 

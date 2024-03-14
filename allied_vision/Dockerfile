@@ -1,6 +1,6 @@
 ARG UBUNTU_VERSION=20.04
 
-FROM echolib:${UBUNTU_VERSION}
+FROM vicoslab/echolib:${UBUNTU_VERSION} AS echolib
 
 LABEL maintainer "pm4824@student.uni-lj.si"
 
