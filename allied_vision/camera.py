@@ -27,6 +27,7 @@ class VimbaCameraHandler():
 
         self.frame = None
         self.n_frames = 0
+        self.settings_changed = False
 
         self.camera: Camera = None
 
@@ -49,6 +50,9 @@ class VimbaCameraHandler():
 
             self.n_frames += 1
 
+        if self.settings_changed:
+            self.settings_changed = False
+            return
         camera.queue_frame(frame)
 
     def callback_camera_input(self, message):
@@ -75,6 +79,7 @@ class VimbaCameraHandler():
                 self.commands[command](self.camera, value)
 
             self.camera.stop_streaming()
+            self.settings_changed = True
 
             self.camera.AcquisitionFrameRateEnable.set(True)
             range = self.camera.get_feature_by_name("AcquisitionFrameRate").get_range()
