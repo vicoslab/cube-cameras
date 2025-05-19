@@ -154,16 +154,13 @@ def main():
             # Grab relevant ranges
             ###########################
 
-            output_ranges = None
             for f in ["BalanceRatio", "ExposureTime"]:
                 range = vimba_camera.get_feature_by_name(f).get_range()
 
-                output_ranges = f"{f} {range[0]} {range[1]}" if output_ranges is None else f"{output_ranges} {f} {range[0]} {range[1]}" 
+                writer = echolib.MessageWriter()
+                writer.writeString(f"{f}Range {range[0]} {range[1]}")
 
-            writer = echolib.MessageWriter()
-            writer.writeString(output_ranges)
-
-            command_output.send(writer)
+                command_output.send(writer)
 
             ###########################
             # Set default camera values
@@ -177,6 +174,16 @@ def main():
                         config_set_functions[feature](vimba_camera, config[feature])
                     except Exception as e:
                         print(f"[ERROR] Setting camera feature {feature} failer: {e}")
+
+            
+            # Send default values to ui
+            writer = echolib.MessageWriter()
+            writer.writeString(f"BalanceRatio {vimba_camera.BalanceRatio.get()}")
+            command_output.send(writer)
+            
+            writer = echolib.MessageWriter()
+            writer.writeString(f"ExposureTime {vimba_camera.ExposureTime.get()}")
+            command_output.send(writer)
 
             ##############################
             # Get and set max frame rate #
@@ -193,7 +200,7 @@ def main():
                     print(f"[ERROR] Setting camera frame rate failed: {e}")  
             
             ###########################
-            # Send compleated frames  #
+            # Send completed frames  #
             ###########################
 
             vimba_camera.start_streaming(handler.frame_handler, buffer_count = 100)
@@ -212,7 +219,7 @@ def main():
         
             vimba_camera.stop_streaming()
         
-        print("Stoped streming?")
+        print("Stopped streaming?")
 
 if __name__=='__main__':
     main()
