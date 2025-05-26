@@ -7,6 +7,7 @@ from json import load
 import echolib
 
 from vimba import Vimba, PixelFormat, FrameStatus, Camera
+import gc
 
 from echolib.camera import FramePublisher, Frame
 
@@ -25,21 +26,12 @@ class VimbaCameraHandler():
 
     def __init__(self):
 
+        self.message = None
         self.frame = None
         self.n_frames = 0
         self.settings_changed = False
 
         self.camera: Camera = None
-
-        self.command_chain = []
-
-        self.commands = \
-        {
-            "ExposureAuto":     lambda camera, v: camera.ExposureAuto.set(v),
-            "BalanceWhiteAuto": lambda camera, v: camera.BalanceWhiteAuto.set(v),
-            "BalanceRatio":     lambda camera, v: camera.BalanceRatio.set(v),
-            "ExposureTime":     lambda camera, v: camera.ExposureTime.set(v)
-        }
 
     def frame_handler(self, camera, frame):
         if frame.get_status() == FrameStatus.Complete:
@@ -57,29 +49,29 @@ class VimbaCameraHandler():
 
     def callback_camera_input(self, message):
 
-        command = echolib.MessageReader(message).readString().split(" ")
-
-        value   = command[1]
-        command = command[0]
+        command, value = echolib.MessageReader(message).readString().split(" ")
 
         try:
             print(f"Got command: {command} -> {value}")
 
             if command == "ExposureAuto":
-                self.commands[command](self.camera, value)
+                self.camera.ExposureAuto.set(value)
             elif command == "BalanceWhiteAuto":
-                self.commands[command](self.camera, value)
+                self.camera.BalanceWhiteAuto.set(value)   
             elif command == "BalanceRatio":
-                value = float(value)
-
-                self.commands[command](self.camera, value)
+                self.camera.BalanceRatio.set(float(value))
             elif command == "ExposureTime":
-                value = float(value)
-
-                self.commands[command](self.camera, value)
-
+                self.camera.ExposureTime.set(float(value))
+            elif command == "GetBalanceRatio":
+                self.message = f"BalanceRatio {self.camera.BalanceRatio.get()}"
+                return
+            elif command == "GetExposureTime":
+                self.message = f"ExposureTime {self.camera.ExposureTime.get()}"
+                return
+            
             self.camera.stop_streaming()
             self.settings_changed = True
+            gc.collect() # free the stream buffer
 
             self.camera.AcquisitionFrameRateEnable.set(True)
             range = self.camera.get_feature_by_name("AcquisitionFrameRate").get_range()
@@ -92,8 +84,7 @@ class VimbaCameraHandler():
             except Exception as e:
                     print(f"[ERROR] Setting camera frame rate failed: {e}") 
 
-            self.camera.start_streaming(self.frame_handler, buffer_count = 1) 
-
+            self.camera.start_streaming(self.frame_handler, buffer_count = 100)
         except Exception as e:
             print(f"[ERROR] Error while setting {command} = {value} | error print -> {e}")
             
@@ -218,6 +209,11 @@ def main():
 #                    print("got frame")
 #                else:
 #                    print("handler frame is none")
+                if handler.message is not None:
+                    writer = echolib.MessageWriter()
+                    writer.writeString(handler.message)
+                    command_output.send(writer)
+                    handler.message = None
 
 
             ###########################
