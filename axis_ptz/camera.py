@@ -22,8 +22,8 @@ class PTZCameraHandler():
             pan, tilt, zoom, speed = map(float, command[1:])
             self.control.relative_move(pan, tilt, zoom, speed)
         elif command[0] == "absolute":
-            pan, tilt, zoom, speed = map(int, command[1:])
-            self.control.area_zoom(pan, tilt, zoom, speed)
+            x, y, zoom, speed = map(int, command[1:])
+            self.control.area_zoom(x, y, zoom, speed)
 
 def main():
 
