@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND noninteractive
 WORKDIR /opt
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget && apt-get clean && rm -rf /var/lib/apt/lists/*
+    wget ffmpeg libsm6 libxext6 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --upgrade pip && python3 -m pip install setuptools
 RUN python3 -m pip install opencv-python>=3 cython

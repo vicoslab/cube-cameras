@@ -5,8 +5,9 @@ import numpy as np
 from json import load
 
 import echolib
+import cv2
 
-from vimba import Vimba, PixelFormat, FrameStatus, Camera
+from vimba import Vimba, FrameStatus, Camera, PixelFormat
 import gc
 
 from echolib.camera import FramePublisher, Frame
@@ -35,8 +36,10 @@ class VimbaCameraHandler():
 
     def frame_handler(self, camera, frame):
         if frame.get_status() == FrameStatus.Complete:
-            frame.convert_pixel_format(PixelFormat.Rgb8)
             frame_copy = frame.as_numpy_ndarray()
+            height, width, _ = frame_copy.shape
+            frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BAYER_RGGB2RGB)
+            frame_copy = cv2.resize(frame_copy, (height//2, width//2))
 
             self.frame = np.array(frame_copy)
 
@@ -162,6 +165,8 @@ def main():
             # Set default camera values
             ###########################
 
+            print("Setting pixel format to", PixelFormat.BayerRG8, "(hardcoded)")
+            vimba_camera.set_pixel_format(PixelFormat.BayerRG8)
             for feature in config_set_functions:
                 if feature in config:
                     try:
