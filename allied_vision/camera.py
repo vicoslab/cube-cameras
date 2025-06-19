@@ -165,8 +165,9 @@ def main():
             # Set default camera values
             ###########################
 
-            print("Setting pixel format to", PixelFormat.BayerRG8, "(hardcoded)")
-            vimba_camera.set_pixel_format(PixelFormat.BayerRG8)
+            if vimba_camera.get_pixel_format() != PixelFormat.BayerRG8:
+                print("Setting pixel format to", PixelFormat.BayerRG8, "(hardcoded)")
+                vimba_camera.set_pixel_format(PixelFormat.BayerRG8)
             for feature in config_set_functions:
                 if feature in config:
                     try:
