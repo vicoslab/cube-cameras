@@ -39,7 +39,7 @@ class VimbaCameraHandler():
             frame_copy = frame.as_numpy_ndarray()
             height, width, _ = frame_copy.shape
             frame_copy = cv2.cvtColor(frame_copy, cv2.COLOR_BAYER_RGGB2RGB)
-            frame_copy = cv2.resize(frame_copy, (height//2, width//2))
+            frame_copy = cv2.resize(frame_copy, (width//2, height//2))
 
             self.frame = np.array(frame_copy)
 
